@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
-
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,13 +22,6 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://127.0.0.1:5173",
         validation_alias=AliasChoices("CORS_ORIGINS", "cors_origins"),
     )
-    ai_provider: str = "disabled"
-    openai_api_key: str = Field(
-        default="",
-        validation_alias=AliasChoices("OPENAI_API_KEY", "AI_API_KEY"),
-        serialization_alias="OPENAI_API_KEY",
-    )
-    openai_model: str = "gpt-4o-mini"
     smtp_host: str = "localhost"
     smtp_port: int = 587
     smtp_user: str = ""
@@ -64,8 +55,7 @@ class Settings(BaseSettings):
         return value
 
     @property
-    def has_openai_config(self) -> bool:
-        return self.ai_provider.lower() in {"openai", "enabled"} and bool(self.openai_api_key.strip())
-
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 settings = Settings()

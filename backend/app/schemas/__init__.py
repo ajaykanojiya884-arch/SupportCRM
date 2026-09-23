@@ -1,4 +1,3 @@
-from .ai import AIResult, AIRequest
 from .auth import AuthRequest, AuthVerifyRequest, AuthenticatedUser, SessionResponse
 from .ticket import (
     TicketCreate,
@@ -20,6 +19,4 @@ __all__ = [
     "AuthVerifyRequest",
     "AuthenticatedUser",
     "SessionResponse",
-    "AIRequest",
-    "AIResult",
 ]

@@ -1,4 +1,4 @@
-import { BarChart3, BriefcaseBusiness, ChevronLeft, LayoutGrid, LogOut, Menu, PlusCircle, Settings, Sparkles, Ticket, X } from 'lucide-react';
+import { BarChart3, BriefcaseBusiness, ChevronLeft, LayoutGrid, LogOut, Menu, PlusCircle, Settings, Ticket, X } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 
@@ -6,7 +6,6 @@ const navItems = [
   { label: 'Overview', path: '/overview', icon: LayoutGrid },
   { label: 'Tickets', path: '/tickets', icon: Ticket },
   { label: 'Create Ticket', path: '/tickets/new', icon: PlusCircle },
-  { label: 'AI Assistant', path: '/ai-assistant', icon: Sparkles },
   { label: 'Analytics', path: '/analytics', icon: BarChart3 },
   { label: 'Settings', path: '/settings', icon: Settings },
 ];

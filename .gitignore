@@ -3,3 +3,9 @@ backend/.env
 node_modules/
 frontend/node_modules/
 backend/__pycache__/
+**/__pycache__/
+**/.pytest_cache/
+**/dist/
+*.db
+*.sqlite3
+*.tsbuildinfo

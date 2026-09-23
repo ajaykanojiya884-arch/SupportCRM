@@ -1,50 +1,73 @@
 Datastraw Operations CRM Dashboard
 
-Project overview:
-This project is a production-style operational support CRM dashboard designed for internal support and operations teams. It includes authentication, ticket management, analytics, AI-assisted support workflows, and a modern dashboard interface for managing customer service operations.
+Executive summary:
+Datastraw Operations is a full-stack customer support and operations management application. It is designed for internal support teams that need one place to receive customer cases, track progress, review workload, and maintain a clear history of operational activity.
 
-Core features implemented:
-- OTP-based email authentication flow with secure verification and session handling
-- Ticket creation, listing, filtering, search, and detail updates
-- Support ticket status tracking (Open, In Progress, Closed)
-- Dashboard overview with operational KPIs and performance charts
-- AI-assisted support functions for ticket summarization, classification, suggested response, and next-action guidance
-- Modern responsive UI built with React, Vite, TypeScript, and Tailwind CSS
-- FastAPI backend with SQLAlchemy ORM and SQLite-ready local configuration
+Business problem addressed:
+Support teams often manage customer issues across email, spreadsheets, and disconnected tools. This project demonstrates how those activities can be organized into a centralized workflow with authenticated access, structured ticket records, status tracking, search, reporting, and a responsive web interface.
 
-Technology stack:
-- Frontend: React, TypeScript, Vite, Tailwind CSS, React Router
-- Backend: FastAPI, SQLAlchemy, Pydantic, Python
-- Database: SQLite for local development, MySQL-ready project configuration
-- Authentication: OTP email verification flow
-- AI hooks: extensible AI service layer for future provider integration
+What the application does:
+- Allows team members to request a one-time verification code by email and sign in securely.
+- Provides a dashboard showing ticket totals, open work, tickets in progress, closed tickets, and recent activity.
+- Lets users create support tickets with customer details, subject, description, and contact information.
+- Provides ticket search, status filtering, pagination, detailed views, and update history.
+- Supports operational statuses including Open, In Progress, and Closed.
+- Allows support staff to add investigation notes and customer follow-up information to tickets.
+- Provides analytics for recent ticket volume and resolution activity.
+- Uses protected API routes so ticket and analytics data require an authenticated session.
+- Includes responsive layouts for desktop and mobile workflows.
 
-Project purpose:
-The application simulates a real internal operations and support portal used by customer support teams to monitor workload, investigate cases, and improve response quality with operational visibility and AI support.
+Typical user workflow:
+1. A support team member opens the portal and enters their email address.
+2. The system sends a one-time verification code through the configured email service.
+3. After verification, the user enters the operations dashboard.
+4. The user reviews workload metrics and recent tickets.
+5. The user creates, searches, opens, or updates a ticket.
+6. The user changes the ticket status and records notes as the issue progresses.
+7. The analytics view provides a high-level view of operational performance.
 
-Why this project stands out:
-- It is not a basic CRUD demo; it is structured like a professional operations dashboard
-- It includes role-style business workflow thinking, dashboard analytics, and operational UX
-- It demonstrates integration between backend APIs, frontend UI, and data-driven features
-- It is organized for extension into real-world deployment scenarios
+Technical implementation:
+- Frontend: React, TypeScript, Vite, Tailwind CSS, and React Router.
+- Backend: Python, FastAPI, Pydantic, SQLAlchemy, and Alembic.
+- Database integration: SQLite for local development and MySQL-compatible configuration for production.
+- Authentication: Email OTP verification with hashed verification codes and hashed session tokens.
+- API design: REST-style FastAPI endpoints under the /api path.
+- Deployment: Vercel Services configuration for a Vite frontend and FastAPI backend in one project.
+- Repository structure: A monorepo with separate frontend and backend service roots.
+
+Skills and responsibilities demonstrated:
+- Translating a business support workflow into a usable software product.
+- Designing frontend pages and navigation for repeated operational tasks.
+- Building forms, validation, loading states, error handling, search, filtering, and pagination.
+- Developing backend APIs and connecting them to a relational data model.
+- Implementing authentication and session validation across protected routes.
+- Managing environment-based configuration for local and production environments.
+- Preparing a multi-service application for cloud deployment.
+- Writing automated backend tests and validating production frontend builds.
+- Diagnosing deployment issues involving build permissions, service roots, routing, and application entrypoints.
+
+Why this project is valuable:
+This is more than a basic create-read-update-delete demonstration. It shows product thinking, workflow design, API integration, authentication, data management, analytics, responsive interface development, testing, and deployment preparation in one complete application.
 
 Verification status:
-- Backend tests passed successfully
-- Frontend TypeScript check passed
-- Frontend production build passed
+- Backend test suite: 8 tests passed.
+- Frontend TypeScript validation: passed.
+- Frontend production build: passed with Vite.
+- FastAPI production-mode import: passed without requiring a database connection during module import.
+- AI-related application code and configuration: removed to keep the production scope focused on CRM operations.
 
 How to run locally:
-1. Open terminal in backend folder
-2. Activate virtual environment:
+1. Open a terminal in the backend folder.
+2. Activate the virtual environment:
    D:\mini\.venv\Scripts\Activate.ps1
-3. Start backend server:
+3. Start the FastAPI backend:
    cd D:\mini\backend
-   python main.py
-4. Open another terminal in frontend folder
-5. Start frontend:
+   python -m uvicorn app.main:app --reload --port 8000
+4. Open a second terminal in the frontend folder.
+5. Install frontend dependencies and start Vite:
    cd D:\mini\frontend
    npm install
    npm run dev
-6. Open the browser and access the app
+6. Open the local frontend URL shown by Vite in a browser.
 
-This project demonstrates end-to-end implementation, product thinking, and technical execution relevant to real-world software operations and support platform development.
+This project demonstrates end-to-end software development for a realistic internal operations product, from requirements and user workflow design through implementation, testing, and cloud deployment preparation.

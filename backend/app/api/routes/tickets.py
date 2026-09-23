@@ -3,11 +3,12 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.api.routes.auth import require_authenticated_user
 from app.models.note import Note
 from app.models.ticket import Ticket
 from app.schemas.ticket import TicketCreate, TicketDetail, TicketListItem, TicketListResponse, TicketUpdate, TicketUpdateResponse
@@ -22,7 +23,7 @@ def _generate_ticket_id(db: Session) -> str:
 
 
 @router.post("/tickets", status_code=201)
-async def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)) -> dict:
+async def create_ticket(payload: TicketCreate, db: Session = Depends(get_db), _: object = Depends(require_authenticated_user)) -> dict:
     now = datetime.now(timezone.utc)
     ticket = Ticket(
         ticket_id=_generate_ticket_id(db),
@@ -47,6 +48,7 @@ async def list_tickets(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     db: Session = Depends(get_db),
+    _: object = Depends(require_authenticated_user),
 ) -> TicketListResponse:
     query = select(Ticket)
     if search and search.strip():
@@ -85,7 +87,7 @@ async def list_tickets(
 
 
 @router.get("/tickets/{ticket_id}", response_model=TicketDetail)
-async def get_ticket(ticket_id: str, db: Session = Depends(get_db)) -> TicketDetail:
+async def get_ticket(ticket_id: str, db: Session = Depends(get_db), _: object = Depends(require_authenticated_user)) -> TicketDetail:
     ticket = db.scalar(select(Ticket).where(Ticket.ticket_id == ticket_id))
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found.")
@@ -109,7 +111,7 @@ async def get_ticket(ticket_id: str, db: Session = Depends(get_db)) -> TicketDet
 
 
 @router.put("/tickets/{ticket_id}", response_model=TicketUpdateResponse)
-async def update_ticket(ticket_id: str, payload: TicketUpdate, db: Session = Depends(get_db)) -> TicketUpdateResponse:
+async def update_ticket(ticket_id: str, payload: TicketUpdate, db: Session = Depends(get_db), _: object = Depends(require_authenticated_user)) -> TicketUpdateResponse:
     ticket = db.scalar(select(Ticket).where(Ticket.ticket_id == ticket_id))
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found.")

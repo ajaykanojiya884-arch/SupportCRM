@@ -5,35 +5,50 @@ from app.main import app
 client = TestClient(app)
 
 
+def auth_headers(monkeypatch, email: str) -> dict[str, str]:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "smtp_host", "localhost")
+    request = client.post("/api/auth/request-otp", json={"email": email})
+    assert request.status_code == 200, request.text
+    code = request.json()["otp"]
+    verify = client.post("/api/auth/verify-otp", json={"email": email, "code": code})
+    assert verify.status_code == 200, verify.text
+    return {"Authorization": f"Bearer {verify.json()['token']}"}
+
+
 def test_health() -> None:
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
 
 
-def test_create_ticket_and_list() -> None:
+def test_create_ticket_and_list(monkeypatch) -> None:
+    headers = auth_headers(monkeypatch, "tickets-list@example.com")
     payload = {
         "customer_name": "Rahul Sharma",
         "customer_email": "rahul@example.com",
         "subject": "Order delayed",
         "description": "Tracking has not updated for five days.",
     }
-    create_response = client.post("/api/tickets", json=payload)
+    create_response = client.post("/api/tickets", json=payload, headers=headers)
     assert create_response.status_code == 201, create_response.text
     created = create_response.json()
     assert "ticket_id" in created
 
-    list_response = client.get("/api/tickets")
+    list_response = client.get("/api/tickets", headers=headers)
     assert list_response.status_code == 200
     assert list_response.json()["total"] >= 1
 
 
-def test_ticket_not_found() -> None:
-    response = client.get("/api/tickets/TKT-99999")
+def test_ticket_not_found(monkeypatch) -> None:
+    headers = auth_headers(monkeypatch, "ticket-not-found@example.com")
+    response = client.get("/api/tickets/TKT-99999", headers=headers)
     assert response.status_code == 404
 
 
-def test_invalid_ticket_request() -> None:
+def test_invalid_ticket_request(monkeypatch) -> None:
+    headers = auth_headers(monkeypatch, "invalid-ticket@example.com")
     response = client.post(
         "/api/tickets",
         json={
@@ -42,11 +57,13 @@ def test_invalid_ticket_request() -> None:
             "subject": "",
             "description": "",
         },
+        headers=headers,
     )
     assert response.status_code == 422
 
 
-def test_status_filter_and_search() -> None:
+def test_status_filter_and_search(monkeypatch) -> None:
+    headers = auth_headers(monkeypatch, "status-filter@example.com")
     create = client.post(
         "/api/tickets",
         json={
@@ -55,22 +72,24 @@ def test_status_filter_and_search() -> None:
             "subject": "Refund issue",
             "description": "Need a refund update after purchase.",
         },
+        headers=headers,
     )
     ticket_id = create.json()["ticket_id"]
 
-    list_all = client.get("/api/tickets")
+    list_all = client.get("/api/tickets", headers=headers)
     assert list_all.status_code == 200
 
-    filtered = client.get(f"/api/tickets?search=alice&status=Open")
+    filtered = client.get(f"/api/tickets?search=alice&status=Open", headers=headers)
     assert filtered.status_code == 200
     assert filtered.json()["total"] >= 1
 
-    detail = client.get(f"/api/tickets/{ticket_id}")
+    detail = client.get(f"/api/tickets/{ticket_id}", headers=headers)
     assert detail.status_code == 200
 
     update = client.put(
         f"/api/tickets/{ticket_id}",
         json={"status": "In Progress", "notes": "Customer contacted, investigating."},
+        headers=headers,
     )
     assert update.status_code == 200
     assert update.json()["success"] is True
@@ -87,7 +106,10 @@ def test_request_otp_returns_dev_code_when_email_delivery_is_disabled(monkeypatc
     assert len(str(body["otp"])) == 6
 
 
-def test_request_otp_reuses_cooldown_message() -> None:
+def test_request_otp_reuses_cooldown_message(monkeypatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "smtp_host", "localhost")
     email = "cooldown@example.com"
     first = client.post("/api/auth/request-otp", json={"email": email})
     assert first.status_code == 200, first.text
@@ -119,30 +141,3 @@ def test_logout_invalidates_session(monkeypatch) -> None:
 
     me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me.status_code == 401
-
-
-def test_ai_chat_returns_generated_response(monkeypatch) -> None:
-    from app.core import config
-
-    class FakeChoices:
-        def __init__(self):
-            self.message = type("Message", (), {"content": "Here is the answer."})()
-
-    class FakeResponse:
-        def __init__(self):
-            self.choices = [FakeChoices()]
-
-    class FakeChat:
-        def __init__(self):
-            self.completions = type("Completions", (), {"create": lambda self, **kwargs: FakeResponse()})()
-
-    class FakeClient:
-        def __init__(self):
-            self.chat = FakeChat()
-
-    monkeypatch.setattr(config.settings, "ai_provider", "openai")
-    monkeypatch.setattr("app.api.routes.ai.get_openai_client", lambda: FakeClient())
-
-    response = client.post("/api/ai/chat", json={"message": "Help with this ticket"})
-    assert response.status_code == 200, response.text
-    assert response.json()["reply"] == "Here is the answer."

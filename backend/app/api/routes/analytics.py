@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.api.routes.auth import require_authenticated_user
 from app.db.database import get_db
 from app.models.ticket import Ticket
 
@@ -18,7 +19,7 @@ def _normalize_status(value: str) -> str:
 
 
 @router.get("/overview")
-async def overview(db: Session = Depends(get_db)) -> dict:
+async def overview(db: Session = Depends(get_db), _: object = Depends(require_authenticated_user)) -> dict:
     total = db.scalar(select(func.count(Ticket.id))) or 0
     open_count = db.scalar(select(func.count(Ticket.id)).where(Ticket.status == "Open")) or 0
     progress_count = db.scalar(select(func.count(Ticket.id)).where(Ticket.status == "In Progress")) or 0
@@ -46,7 +47,7 @@ async def overview(db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("/trends")
-async def trends(db: Session = Depends(get_db)) -> dict:
+async def trends(db: Session = Depends(get_db), _: object = Depends(require_authenticated_user)) -> dict:
     days = []
     today = datetime.now(timezone.utc).date()
     for i in range(7):

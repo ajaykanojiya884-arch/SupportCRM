@@ -224,3 +224,29 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(security), 
         session.is_active = False
         db.commit()
     return {"message": "Logged out."}
+
+
+def require_authenticated_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> AuthenticatedUser:
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    token_hash = _hash_value(credentials.credentials)
+    session = db.scalar(
+        select(AuthSession)
+        .where(AuthSession.token_hash == token_hash)
+        .where(AuthSession.is_active.is_(True))
+        .order_by(AuthSession.created_at.desc())
+    )
+    if not session:
+        raise HTTPException(status_code=401, detail="Session expired.")
+
+    expires_at = _normalize_datetime(session.expires_at)
+    if expires_at is None or expires_at <= datetime.now(timezone.utc):
+        session.is_active = False
+        db.commit()
+        raise HTTPException(status_code=401, detail="Session expired.")
+
+    return AuthenticatedUser(email=session.email)
