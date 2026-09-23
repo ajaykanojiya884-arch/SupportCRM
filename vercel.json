@@ -3,6 +3,9 @@
         "frontend": {
             "root": "frontend/",
             "framework": "vite",
+            "installCommand": "npm ci",
+            "buildCommand": "npm run build",
+            "outputDirectory": "dist",
             "rewrites": [
                 {
                     "source": "/(.*)",
@@ -18,13 +21,13 @@
     },
     "rewrites": [
         {
-            "source": "/api/:path*",
+            "source": "/api/(.*)",
             "destination": {
                 "service": "backend"
             }
         },
         {
-            "source": "/:path*",
+            "source": "/(.*)",
             "destination": {
                 "service": "frontend"
             }
