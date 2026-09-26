@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://supportcrm-d2s6.onrender.com/api/$1"
+    }
+  ]
+}
