@@ -50,6 +50,7 @@ def _send_otp_email(to_email: str, otp: str) -> None:
         f"Your Datastraw verification code is: {otp}\n\n"
         f"This code will expire in {settings.otp_expiration_minutes} minutes.\n\n"
         "Use this code to continue login."
+        
     )
 
     smtp_host = (settings.smtp_host or "").strip()
